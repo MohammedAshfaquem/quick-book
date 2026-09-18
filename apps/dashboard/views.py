@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db import IntegrityError
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import make_aware
@@ -470,10 +471,14 @@ class UserListView(StaffRequiredMixin, View):
     def get(self, request):
         search = request.GET.get(FilterParams.SEARCH, "")
         role_filter = request.GET.get("role", "")
-        qs = User.objects.all()
+
+        # Exclude superusers and current logged-in user from the user list
+        qs = User.objects.filter(is_superuser=False).exclude(pk=request.user.pk)
 
         if search:
-            qs = qs.filter(email__icontains=search) | qs.filter(referral_code__icontains=search)
+            qs = qs.filter(
+                Q(email__icontains=search) | Q(username__icontains=search) | Q(referral_code__icontains=search)
+            )
 
         if role_filter == "staff":
             qs = qs.filter(is_staff=True)
@@ -505,6 +510,10 @@ class UserDetailView(StaffRequiredMixin, View):
 
 class UserToggleStaffView(StaffRequiredMixin, View):
     def post(self, request, pk):
+        if not request.user.is_superuser:
+            messages.error(request, Messages.User.SUPERADMIN_REQUIRED_STAFF_TOGGLE)
+            return redirect("dashboard:user-list")
+
         user = get_object_or_404(User, pk=pk)
         if user == request.user:
             messages.error(request, Messages.User.CANNOT_MODIFY_SELF)
@@ -513,6 +522,102 @@ class UserToggleStaffView(StaffRequiredMixin, View):
         user.save()
         role_label = "Staff" if user.is_staff else "Customer"
         messages.success(request, Messages.User.STATUS_UPDATED.format(email=user.email, role=role_label))
+        return redirect("dashboard:user-list")
+
+
+class UserEditView(StaffRequiredMixin, View):
+    def get(self, request, pk):
+        target_user = get_object_or_404(User, pk=pk)
+        # Staff members cannot edit another staff member — only superusers can edit staff accounts
+        if (target_user.is_staff or target_user.is_superuser) and not request.user.is_superuser:
+            messages.error(request, Messages.User.SUPERADMIN_REQUIRED_EDIT)
+            return redirect("dashboard:user-list")
+        return render(request, "dashboard/users/form.html", {"target_user": target_user})
+
+    def post(self, request, pk):
+        target_user = get_object_or_404(User, pk=pk)
+        if (target_user.is_staff or target_user.is_superuser) and not request.user.is_superuser:
+            messages.error(request, Messages.User.SUPERADMIN_REQUIRED_EDIT)
+            return redirect("dashboard:user-list")
+
+        first_name = request.POST.get(UserFields.FIRST_NAME, "").strip()
+        last_name = request.POST.get(UserFields.LAST_NAME, "").strip()
+        email = request.POST.get(UserFields.EMAIL, "").strip()
+        username = request.POST.get(UserFields.USERNAME, "").strip()
+        is_staff = request.POST.get(UserFields.IS_STAFF) == "on"
+        is_active = request.POST.get(UserFields.IS_ACTIVE) == "on"
+
+        if User.objects.filter(email__iexact=email).exclude(pk=target_user.pk).exists():
+            messages.error(request, Messages.Auth.EMAIL_EXISTS)
+            return render(request, "dashboard/users/form.html", {"target_user": target_user})
+
+        if username and User.objects.filter(username__iexact=username).exclude(pk=target_user.pk).exists():
+            messages.error(request, Messages.Auth.USERNAME_EXISTS)
+            return render(request, "dashboard/users/form.html", {"target_user": target_user})
+
+        target_user.first_name = first_name
+        target_user.last_name = last_name
+        target_user.email = email
+        if username:
+            target_user.username = username
+
+        if request.user.is_superuser:
+            target_user.is_staff = is_staff
+
+        target_user.is_active = is_active
+        target_user.save()
+
+        messages.success(request, f"User '{target_user.email}' updated successfully!")
+        return redirect("dashboard:user-detail", pk=target_user.pk)
+
+
+class UserAddView(StaffRequiredMixin, View):
+    def get(self, request):
+        if not request.user.is_superuser:
+            messages.error(request, "Permission denied. Only superadmins can create user accounts.")
+            return redirect("dashboard:user-list")
+        return render(request, "dashboard/users/form.html", {"target_user": None})
+
+    def post(self, request):
+        if not request.user.is_superuser:
+            messages.error(request, "Permission denied. Only superadmins can create user accounts.")
+            return redirect("dashboard:user-list")
+
+        email = request.POST.get(UserFields.EMAIL, "").strip()
+        username = request.POST.get(UserFields.USERNAME, "").strip() or email
+        password = request.POST.get(UserFields.PASSWORD, "")
+        password_confirm = request.POST.get(UserFields.PASSWORD_CONFIRM, "")
+        first_name = request.POST.get(UserFields.FIRST_NAME, "").strip()
+        last_name = request.POST.get(UserFields.LAST_NAME, "").strip()
+        is_staff = request.POST.get(UserFields.IS_STAFF) == "on"
+
+        if not email or not password:
+            messages.error(request, "Email and Password are required.")
+            return render(request, "dashboard/users/form.html", {"target_user": None})
+
+        if password != password_confirm:
+            messages.error(request, Messages.Auth.PASSWORDS_DO_NOT_MATCH)
+            return render(request, "dashboard/users/form.html", {"target_user": None})
+
+        if User.objects.filter(email__iexact=email).exists():
+            messages.error(request, Messages.Auth.EMAIL_EXISTS)
+            return render(request, "dashboard/users/form.html", {"target_user": None})
+
+        if username and User.objects.filter(username__iexact=username).exists():
+            messages.error(request, Messages.Auth.USERNAME_EXISTS)
+            return render(request, "dashboard/users/form.html", {"target_user": None})
+
+        new_user = User.objects.create_user(
+            email=email,
+            username=username,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+            is_staff=is_staff,
+        )
+
+        role_str = "Staff" if is_staff else "Customer"
+        messages.success(request, f"{role_str} user '{new_user.email}' created successfully!")
         return redirect("dashboard:user-list")
 
 

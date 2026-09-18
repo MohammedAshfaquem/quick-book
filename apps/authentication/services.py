@@ -76,3 +76,12 @@ def change_password(user: User, current_password: str, new_password: str) -> Non
 
     user.set_password(new_password)
     user.save(update_fields=[UserFields.PASSWORD])
+
+
+def update_user_profile(user: User, validated_data: dict) -> User:
+    for field, value in validated_data.items():
+        setattr(user, field, value)
+
+    update_fields = list(validated_data.keys())
+    user.save(update_fields=update_fields)
+    return user

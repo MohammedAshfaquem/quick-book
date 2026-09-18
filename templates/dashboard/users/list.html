@@ -8,6 +8,9 @@
     <h1 class="page-title">User Accounts</h1>
     <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Registered customer and staff accounts</p>
   </div>
+  {% if request.user.is_superuser %}
+    <a href="{% url 'dashboard:user-add' %}" class="btn btn-primary">+ Add New User</a>
+  {% endif %}
 </div>
 
 <div class="card-table">
@@ -55,11 +58,14 @@
           <td>
             <div style="display: flex; gap: 0.35rem; align-items: center;">
               <a href="{% url 'dashboard:user-detail' u.id %}" class="btn btn-secondary btn-sm btn-view">View</a>
-              {% if u != request.user %}
+              {% if not u.is_staff or request.user.is_superuser %}
+                <a href="{% url 'dashboard:user-edit' u.id %}" class="btn btn-secondary btn-sm">Edit</a>
+              {% endif %}
+              {% if request.user.is_superuser and u != request.user %}
                 <form method="POST" action="{% url 'dashboard:user-toggle-staff' u.id %}" class="hide-mobile" style="display: inline;">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-{% if u.is_staff %}danger{% else %}primary{% endif %} btn-sm">
-                    {% if u.is_staff %}Demote to Customer{% else %}Promote to Staff{% endif %}
+                    {% if u.is_staff %}Demote{% else %}Promote{% endif %}
                   </button>
                 </form>
               {% endif %}

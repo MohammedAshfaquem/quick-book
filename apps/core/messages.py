@@ -12,6 +12,8 @@ class Messages:
         WELCOME_BACK = "Welcome back, {email}!"
         INVALID_CREDENTIALS = "Invalid staff credentials or permission denied."
         PASSWORDS_DO_NOT_MATCH = "Passwords do not match."
+        EMAIL_EXISTS = "A user with this email already exists."
+        USERNAME_EXISTS = "A user with this username already exists."
 
     class Vendor:
         CREATED_SUCCESS = "Vendor profile created successfully."
@@ -77,3 +79,5 @@ class Messages:
     class User:
         STATUS_UPDATED = "User '{email}' status updated to {role}."
         CANNOT_MODIFY_SELF = "You cannot modify your own staff privileges."
+        SUPERADMIN_REQUIRED_EDIT = "Permission denied. Staff members cannot edit another staff account — only customers can be edited."
+        SUPERADMIN_REQUIRED_STAFF_TOGGLE = "Permission denied. Only superadmins can modify staff permissions."

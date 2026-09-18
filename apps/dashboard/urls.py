@@ -20,7 +20,9 @@ from apps.dashboard.views import (
     EventEditView,
     EventListView,
     EventToggleStatusView,
+    UserAddView,
     UserDetailView,
+    UserEditView,
     UserListView,
     UserToggleStaffView,
     VendorAddView,
@@ -62,7 +64,8 @@ urlpatterns = [
 
     # Users
     path(DashboardUrls.USER_LIST, UserListView.as_view(), name=DashboardNames.USER_LIST),
+    path(DashboardUrls.USER_ADD, UserAddView.as_view(), name=DashboardNames.USER_ADD),
     path(DashboardUrls.USER_DETAIL, UserDetailView.as_view(), name=DashboardNames.USER_DETAIL),
+    path(DashboardUrls.USER_EDIT, UserEditView.as_view(), name=DashboardNames.USER_EDIT),
     path(DashboardUrls.USER_TOGGLE_STAFF, UserToggleStaffView.as_view(), name=DashboardNames.USER_TOGGLE_STAFF),
 ]
-

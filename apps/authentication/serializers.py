@@ -53,6 +53,35 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    """Partial update serializer for user profile details."""
+
+    class Meta:
+        model = User
+        fields = [
+            UserFields.FIRST_NAME,
+            UserFields.LAST_NAME,
+            UserFields.USERNAME,
+            UserFields.EMAIL,
+        ]
+
+    def validate_email(self, value):
+        qs = User.objects.filter(email__iexact=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError(Messages.Auth.EMAIL_EXISTS)
+        return value
+
+    def validate_username(self, value):
+        qs = User.objects.filter(username__iexact=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError(Messages.Auth.USERNAME_EXISTS)
+        return value
+
+
 class TokenResponseSerializer(serializers.Serializer):
     access = serializers.CharField()
     refresh = serializers.CharField()

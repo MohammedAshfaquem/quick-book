@@ -19,7 +19,7 @@
       </div>
       <div class="top-user-details">
         <span class="user-email-text">{{ request.user.email }}</span>
-        <span class="user-role-tag">Super Admin</span>
+        <span class="user-role-tag">{% if request.user.is_superuser %}Super Admin{% else %}Staff Admin{% endif %}</span>
       </div>
     </div>
   </div>

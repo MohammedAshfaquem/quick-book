@@ -12,8 +12,15 @@ from apps.authentication.serializers import (
     LogoutSerializer,
     RegisterSerializer,
     UserProfileSerializer,
+    UserProfileUpdateSerializer,
 )
-from apps.authentication.services import change_password, login_user, logout_user, register_user
+from apps.authentication.services import (
+    change_password,
+    login_user,
+    logout_user,
+    register_user,
+    update_user_profile,
+)
 from apps.core.constants import FilterParams
 from apps.core.errors import Errors
 from apps.core.exceptions import QuickBookException
@@ -92,6 +99,12 @@ class CurrentUserView(APIView):
     def get(self, request):
         serializer = UserProfileSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        serializer = UserProfileUpdateSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        updated_user = update_user_profile(request.user, serializer.validated_data)
+        return Response(UserProfileSerializer(updated_user).data, status=status.HTTP_200_OK)
 
 
 class UserListView(APIView):

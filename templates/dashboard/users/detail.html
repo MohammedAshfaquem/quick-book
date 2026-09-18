@@ -144,7 +144,12 @@
     <h1 class="page-title">User Profile & Referral Tree</h1>
     <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Detailed information and referral network placement for {{ target_user.email }}</p>
   </div>
-  <a href="{% url 'dashboard:user-list' %}" class="btn btn-secondary">← Back to Users List</a>
+  <div style="display: flex; gap: 0.5rem;">
+    {% if not target_user.is_staff or request.user.is_superuser %}
+      <a href="{% url 'dashboard:user-edit' target_user.pk %}" class="btn btn-primary">✏️ Edit Profile</a>
+    {% endif %}
+    <a href="{% url 'dashboard:user-list' %}" class="btn btn-secondary">← Back to Users List</a>
+  </div>
 </div>
 
 <!-- User Overview Grid -->

@@ -30,7 +30,9 @@ class DashboardUrls:
 
     # Users
     USER_LIST = "users/"
+    USER_ADD = "users/add/"
     USER_DETAIL = "users/<pk>/"
+    USER_EDIT = "users/<pk>/edit/"
     USER_TOGGLE_STAFF = "users/<pk>/toggle-staff/"
 
 
@@ -65,6 +67,8 @@ class DashboardNames:
 
     # Users
     USER_LIST = "user-list"
+    USER_ADD = "user-add"
     USER_DETAIL = "user-detail"
+    USER_EDIT = "user-edit"
     USER_TOGGLE_STAFF = "user-toggle-staff"
 
