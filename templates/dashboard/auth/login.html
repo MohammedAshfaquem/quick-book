@@ -332,9 +332,116 @@
         display: none;
       }
     }
+
+    /* ── Auth Error Modal ── */
+    .auth-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      animation: overlayFadeIn 0.2s ease forwards;
+    }
+
+    @keyframes overlayFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .auth-modal-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 2.5rem 2rem 2rem;
+      width: 100%;
+      max-width: 380px;
+      margin: 1rem;
+      text-align: center;
+      box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.06);
+      animation: modalSlideUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes modalSlideUp {
+      from { opacity: 0; transform: translateY(24px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .auth-modal-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #fef2f2;
+      border: 2px solid #fecaca;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+      color: #dc2626;
+    }
+
+    .auth-modal-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
+    }
+
+    .auth-modal-message {
+      font-size: 0.9rem;
+      color: #64748b;
+      line-height: 1.55;
+      margin-bottom: 1.75rem;
+      font-weight: 500;
+    }
+
+    .auth-modal-dismiss {
+      width: 100%;
+      padding: 0.8rem 1.5rem;
+      background-color: #0d9488;
+      color: #ffffff;
+      font-size: 0.92rem;
+      font-weight: 700;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .auth-modal-dismiss:hover {
+      background-color: #0f766e;
+      box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4);
+      transform: translateY(-1px);
+    }
   </style>
 </head>
 <body>
+
+  <!-- Auth Error Modal (renders as overlay if there's an error message) -->
+  {% if messages %}
+    {% for message in messages %}
+      {% if message.tags == 'error' %}
+        <div class="auth-modal-overlay" id="authErrorModal">
+          <div class="auth-modal-card">
+            <div class="auth-modal-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+            <h3 class="auth-modal-title">Sign In Failed</h3>
+            <p class="auth-modal-message">{{ message }}</p>
+            <button type="button" class="auth-modal-dismiss" id="authModalDismiss">Try Again</button>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
 
   <div class="login-split-container">
     <!-- Left Column: Clean Form -->
@@ -363,28 +470,11 @@
           <p class="login-subtitle">Welcome back! Access your event management dashboard.</p>
         </div>
 
-        <!-- Messages / Alerts -->
+        <!-- Success messages (non-error toasts) -->
         {% if messages %}
           {% for message in messages %}
-            {% if message.tags == 'error' %}
-              <div class="modal-backdrop" id="errorModal">
-                <div class="modal-card">
-                  <div class="modal-header-icon error">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10"/>
-                      <line x1="12" y1="8" x2="12" y2="12"/>
-                      <line x1="12" y1="16" x2="12.01" y2="16"/>
-                    </svg>
-                  </div>
-                  <h3 class="modal-title">Authentication Required</h3>
-                  <p class="modal-body-text">{{ message }}</p>
-                  <button type="button" class="btn btn-primary modal-action-btn" onclick="closeModal()">Dismiss</button>
-                </div>
-              </div>
-            {% else %}
-              <div class="alert alert-success">
-                {{ message }}
-              </div>
+            {% if message.tags != 'error' %}
+              <div class="alert alert-success">{{ message }}</div>
             {% endif %}
           {% endfor %}
         {% endif %}
@@ -456,6 +546,7 @@
   </div>
 
   <script>
+    // ── Password Toggle ──
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
     const eyeIcon = document.getElementById('eyeIcon');
@@ -463,30 +554,34 @@
     togglePassword.addEventListener('click', function () {
       const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
       passwordInput.setAttribute('type', type);
-
-      if (type === 'text') {
-        eyeIcon.innerHTML = `
-          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-          <line x1="1" y1="1" x2="23" y2="23"/>
-        `;
-      } else {
-        eyeIcon.innerHTML = `
-          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-          <circle cx="12" cy="12" r="3"/>
-        `;
-      }
+      eyeIcon.innerHTML = type === 'text'
+        ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`
+        : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
     });
 
-    function closeModal() {
-      const modal = document.getElementById('errorModal');
-      if (modal) {
-        modal.style.opacity = '0';
-        setTimeout(() => modal.remove(), 200);
-      }
+    // ── Auth Error Modal Dismiss ──
+    function closeAuthModal() {
+      const overlay = document.getElementById('authErrorModal');
+      if (!overlay) return;
+      overlay.style.transition = 'opacity 0.2s ease';
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 220);
     }
 
+    const dismissBtn = document.getElementById('authModalDismiss');
+    if (dismissBtn) dismissBtn.addEventListener('click', closeAuthModal);
+
+    // Close on backdrop click
+    const authModal = document.getElementById('authErrorModal');
+    if (authModal) {
+      authModal.addEventListener('click', function(e) {
+        if (e.target === this) closeAuthModal();
+      });
+    }
+
+    // Close on Escape
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Escape') closeAuthModal();
     });
   </script>
 </body>

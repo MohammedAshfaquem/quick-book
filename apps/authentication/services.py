@@ -67,3 +67,12 @@ def login_user(email: str, password: str) -> tuple[User, dict]:
 def logout_user(refresh_token: str) -> None:
     token = RefreshToken(refresh_token)
     token.blacklist()
+
+
+def change_password(user: User, current_password: str, new_password: str) -> None:
+
+    if not user.check_password(current_password):
+        raise QuickBookException(Errors.Auth.INCORRECT_CURRENT_PASSWORD)
+
+    user.set_password(new_password)
+    user.save(update_fields=[UserFields.PASSWORD])

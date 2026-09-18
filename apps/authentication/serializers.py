@@ -61,3 +61,18 @@ class TokenResponseSerializer(serializers.Serializer):
 
 class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField(help_text="JWT refresh token to blacklist.")
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """Validate a change-password request: current password, new password, and confirmation."""
+
+    current_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True, validators=[validate_password])
+    new_password_confirm = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        if attrs[UserFields.NEW_PASSWORD] != attrs[UserFields.NEW_PASSWORD_CONFIRM]:
+            raise serializers.ValidationError(
+                {UserFields.NEW_PASSWORD_CONFIRM: Messages.Auth.PASSWORDS_DO_NOT_MATCH}
+            )
+        return attrs

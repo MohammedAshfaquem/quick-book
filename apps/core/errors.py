@@ -47,6 +47,11 @@ class Errors:
             "message": "You do not have permission to perform this action.",
             "status_code": status.HTTP_403_FORBIDDEN,
         }
+        INCORRECT_CURRENT_PASSWORD = {
+            "code": "quickbook_auth_00009",
+            "message": "Current password is incorrect.",
+            "status_code": status.HTTP_400_BAD_REQUEST,
+        }
 
     class Event:
         """Event domain errors."""

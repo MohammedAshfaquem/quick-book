@@ -7,12 +7,13 @@ from rest_framework_simplejwt.exceptions import TokenError
 from apps.authentication.constants import JWTFields, UserFields
 from apps.authentication.selectors import get_all_users
 from apps.authentication.serializers import (
+    ChangePasswordSerializer,
     LoginSerializer,
     LogoutSerializer,
     RegisterSerializer,
     UserProfileSerializer,
 )
-from apps.authentication.services import login_user, logout_user, register_user
+from apps.authentication.services import change_password, login_user, logout_user, register_user
 from apps.core.constants import FilterParams
 from apps.core.errors import Errors
 from apps.core.exceptions import QuickBookException
@@ -105,3 +106,23 @@ class UserListView(APIView):
         serializer = UserProfileSerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data)
 
+
+class ChangePasswordView(APIView):
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = ChangePasswordSerializer
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        change_password(
+            user=request.user,
+            current_password=serializer.validated_data[UserFields.CURRENT_PASSWORD],
+            new_password=serializer.validated_data[UserFields.NEW_PASSWORD],
+        )
+
+        return Response(
+            {"message": Messages.Auth.PASSWORD_CHANGED},
+            status=status.HTTP_200_OK,
+        )

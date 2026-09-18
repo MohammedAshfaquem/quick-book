@@ -1,7 +1,14 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from apps.authentication.constants import AuthNames, AuthUrls
-from apps.authentication.views import CurrentUserView, LoginView, LogoutView, RegisterView, UserListView
+from apps.authentication.views import (
+    ChangePasswordView,
+    CurrentUserView,
+    LoginView,
+    LogoutView,
+    RegisterView,
+    UserListView,
+)
 
 urlpatterns = [
     # Registration & Login
@@ -15,4 +22,7 @@ urlpatterns = [
     # Logged-in user profile
     path(AuthUrls.CURRENT_USER, CurrentUserView.as_view(), name=AuthNames.CURRENT_USER),
     path(AuthUrls.USERS_LIST, UserListView.as_view(), name=AuthNames.USERS_LIST),
+
+    # Change password (requires authentication)
+    path(AuthUrls.CHANGE_PASSWORD, ChangePasswordView.as_view(), name=AuthNames.CHANGE_PASSWORD),
 ]

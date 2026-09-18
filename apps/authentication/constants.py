@@ -5,6 +5,7 @@ class AuthUrls:
     TOKEN_REFRESH = "token/refresh/"
     CURRENT_USER = "current-user/"
     USERS_LIST = "users/"
+    CHANGE_PASSWORD = "change-password/"
 
 
 class AuthNames:
@@ -14,6 +15,7 @@ class AuthNames:
     TOKEN_REFRESH = "auth-token-refresh"
     CURRENT_USER = "auth-current-user"
     USERS_LIST = "auth-users-list"
+    CHANGE_PASSWORD = "auth-change-password"
 
 
 class UserFields:
@@ -23,6 +25,9 @@ class UserFields:
     LAST_NAME = "last_name"
     PASSWORD = "password"
     PASSWORD_CONFIRM = "password_confirm"
+    CURRENT_PASSWORD = "current_password"
+    NEW_PASSWORD = "new_password"
+    NEW_PASSWORD_CONFIRM = "new_password_confirm"
     REFERRAL_CODE = "referral_code"
     REFERRED_BY = "referred_by"
     IS_STAFF = "is_staff"
