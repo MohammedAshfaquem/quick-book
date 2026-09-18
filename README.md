@@ -152,7 +152,7 @@ python manage.py runserver
 | Component | URL | Credentials / Notes |
 | :--- | :--- | :--- |
 | **Root Redirect** | `http://127.0.0.1:8000/` | Redirects to `/dashboard/` |
-| **Staff Dashboard** | `http://127.0.0.1:8000/dashboard/login/` | `ashfaque@gmail.com` / `admin123` |
+| **Staff Dashboard** | `http://127.0.0.1:8000/dashboard/login/`
 | **Interactive Swagger API Docs** | `http://127.0.0.1:8000/docs/` | Test all REST APIs |
 | **Django Admin** | `http://127.0.0.1:8000/admin/` | Direct DB view |
 
