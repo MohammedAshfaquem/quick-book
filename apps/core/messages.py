@@ -1,5 +1,8 @@
 class Messages:
 
+    class Validation:
+        SUCCESS = "Validation successful."
+
     class Auth:
         LOGOUT_SUCCESS = "Logged out successfully."
         REGISTER_SUCCESS = "Account created successfully."

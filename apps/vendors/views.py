@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from apps.core.constants import ActionType
 from apps.core.errors import Errors
 from apps.core.exceptions import QuickBookException
+from apps.core.messages import Messages
 from apps.core.pagination import StandardResultsPagination
 from apps.core.permissions import IsStaffUser
 from apps.vendors.constants import VendorFields
@@ -47,7 +48,7 @@ class VendorCreateView(APIView):
         result = create_vendor(serializer.validated_data, action=action)
 
         if result is None:
-            return Response({"message": "Validation successful.", "action": action}, status=status.HTTP_200_OK)
+            return Response({"message": Messages.Validation.SUCCESS, "action": action}, status=status.HTTP_200_OK)
 
         return Response(
             VendorSerializer(result).data,
@@ -88,7 +89,7 @@ class VendorUpdateView(APIView):
         result = update_vendor(pk, serializer.validated_data, action=action)
 
         if result is None:
-            return Response({"message": "Validation successful.", "action": action}, status=status.HTTP_200_OK)
+            return Response({"message": Messages.Validation.SUCCESS, "action": action}, status=status.HTTP_200_OK)
         if isinstance(result, dict):
             return Response(result, status=status.HTTP_200_OK)
 
@@ -101,7 +102,6 @@ class VendorStatusView(APIView):
     serializer_class = VendorStatusSerializer
 
     def patch(self, request, pk):
-        """Set vendor is_active status."""
         serializer = VendorStatusSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -113,7 +113,7 @@ class VendorStatusView(APIView):
         )
 
         if result is None:
-            return Response({"message": "Validation successful.", "action": action}, status=status.HTTP_200_OK)
+            return Response({"message": Messages.Validation.SUCCESS, "action": action}, status=status.HTTP_200_OK)
         if isinstance(result, dict):
             return Response(result, status=status.HTTP_200_OK)
 

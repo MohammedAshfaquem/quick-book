@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from apps.core.constants import ActionType
 from apps.core.errors import Errors
 from apps.core.exceptions import QuickBookException
+from apps.core.messages import Messages
 from apps.core.pagination import StandardResultsPagination
 from apps.core.permissions import IsStaffUser
 from apps.events.constants import EventFields
@@ -50,7 +51,7 @@ class EventCreateView(APIView):
         result = create_event(serializer.validated_data, action=action)
 
         if result is None:
-            return Response({"message": "Validation successful.", "action": action}, status=status.HTTP_200_OK)
+            return Response({"message": Messages.Validation.SUCCESS, "action": action}, status=status.HTTP_200_OK)
 
         return Response(
             EventSerializer(result).data,
@@ -90,7 +91,7 @@ class EventUpdateView(APIView):
         result = update_event(pk, serializer.validated_data, action=action)
 
         if result is None:
-            return Response({"message": "Validation successful.", "action": action}, status=status.HTTP_200_OK)
+            return Response({"message": Messages.Validation.SUCCESS, "action": action}, status=status.HTTP_200_OK)
         if isinstance(result, dict):
             return Response(result, status=status.HTTP_200_OK)
 
@@ -114,7 +115,7 @@ class EventStatusView(APIView):
         )
 
         if result is None:
-            return Response({"message": "Validation successful.", "action": action}, status=status.HTTP_200_OK)
+            return Response({"message": Messages.Validation.SUCCESS, "action": action}, status=status.HTTP_200_OK)
         if isinstance(result, dict):
             return Response(result, status=status.HTTP_200_OK)
 
