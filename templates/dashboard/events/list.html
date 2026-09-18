@@ -1,0 +1,121 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Events{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Event Catalog</h1>
+    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Manage events, seat availability, and dates</p>
+  </div>
+  <a href="{% url 'dashboard:event-add' %}" class="btn btn-primary">+ Add New Event</a>
+</div>
+
+<style>
+  .show-badge {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .show-badge.upcoming       { background: #ccfbf1; color: #0f766e; }
+  .show-badge.booking_enabled { background: #fef9c3; color: #854d0e; }
+  .show-badge.running        { background: #dcfce7; color: #15803d; }
+  .show-badge.expired        { background: #fee2e2; color: #b91c1c; }
+</style>
+
+<div class="card-table">
+  <div class="table-header-bar">
+    <form method="GET" action="" style="display: flex; gap: 0.75rem; flex: 1; max-width: 700px; align-items: center;">
+      <input type="text" name="search" class="form-control" placeholder="Search event title..." value="{{ request.GET.search|default:'' }}">
+      <select name="status" class="filter-select" onchange="this.form.submit()">
+        <option value="">All Statuses</option>
+        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+        <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactive</option>
+      </select>
+      <select name="show_status" class="filter-select" onchange="this.form.submit()">
+        <option value="">All Show Statuses</option>
+        <option value="upcoming"        {% if request.GET.show_status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+        <option value="booking_enabled" {% if request.GET.show_status == 'booking_enabled' %}selected{% endif %}>Booking Enabled</option>
+        <option value="running"         {% if request.GET.show_status == 'running' %}selected{% endif %}>Running</option>
+        <option value="expired"         {% if request.GET.show_status == 'expired' %}selected{% endif %}>Expired</option>
+      </select>
+    </form>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Event Title</th>
+        <th class="hide-mobile">Vendor</th>
+        <th class="hide-mobile">Venue</th>
+        <th class="hide-mobile">Start Date</th>
+        <th class="hide-mobile">Available / Total Seats</th>
+        <th class="hide-mobile">Price</th>
+        <th class="hide-mobile">Status</th>
+        <th>Show Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in events %}
+        <tr>
+          <td>
+            <a href="{% url 'dashboard:event-detail' event.id %}" style="color: #0d9488; text-decoration: none; font-weight: 700;">
+              {{ event.title }}
+            </a>
+          </td>
+          <td class="hide-mobile">{{ event.vendor.company_name }}</td>
+          <td class="hide-mobile">{{ event.venue }}</td>
+          <td class="hide-mobile">{{ event.start_date|date:"M d, Y H:i" }}</td>
+          <td class="hide-mobile">
+            <div>
+              <span style="color: {% if event.available_seats == 0 %}#dc2626{% else %}#16a34a{% endif %}; font-weight: 700;">
+                {{ event.available_seats }}
+              </span> / {{ event.total_seats }}
+            </div>
+            {% if event.reserved_seats > 0 %}
+              <small style="color: #d97706; font-size: 0.75rem;">({{ event.reserved_seats }} reserved)</small>
+            {% endif %}
+          </td>
+          <td class="hide-mobile">${{ event.price }}</td>
+          <td class="hide-mobile">
+            <span class="badge badge-{% if event.is_active %}success{% else %}danger{% endif %}">
+              {% if event.is_active %}Active{% else %}Inactive{% endif %}
+            </span>
+          </td>
+          <td>
+            <span class="show-badge {{ event.show_status }}">
+              {% if event.show_status == 'upcoming' %}Upcoming
+              {% elif event.show_status == 'booking_enabled' %}Booking Enabled
+              {% elif event.show_status == 'running' %}Running
+              {% elif event.show_status == 'expired' %}Expired
+              {% else %}{{ event.show_status }}
+              {% endif %}
+            </span>
+          </td>
+          <td>
+            <div style="display: flex; gap: 0.35rem; align-items: center;">
+              <a href="{% url 'dashboard:event-detail' event.id %}" class="btn btn-secondary btn-sm btn-view">View</a>
+              <a href="{% url 'dashboard:event-edit' event.id %}" class="btn btn-secondary btn-sm hide-mobile">Edit</a>
+              <form method="POST" action="{% url 'dashboard:event-toggle-status' event.id %}" class="hide-mobile" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-{% if event.is_active %}danger{% else %}primary{% endif %} btn-sm">
+                  {% if event.is_active %}Deactivate{% else %}Activate{% endif %}
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No events found.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

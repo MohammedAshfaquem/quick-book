@@ -1,0 +1,151 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Vendor Detail — {{ vendor.company_name }}{% endblock %}
+
+{% block content %}
+<style>
+  .metric-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  .metric-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+  }
+  .metric-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .metric-subtitle {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+      <h1 class="page-title" style="margin: 0;">{{ vendor.company_name }}</h1>
+      <span class="badge badge-{% if vendor.is_active %}success{% else %}danger{% endif %}">
+        {% if vendor.is_active %}Active Vendor{% else %}Inactive Vendor{% endif %}
+      </span>
+    </div>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">Organizer Profile & Hosted Event Performance</p>
+  </div>
+  <div style="display: flex; gap: 0.5rem;">
+    <a href="{% url 'dashboard:vendor-edit' vendor.id %}" class="btn btn-primary">Edit Vendor</a>
+    <a href="{% url 'dashboard:vendor-list' %}" class="btn btn-secondary">← Back to Vendors</a>
+  </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 2rem;">
+  <!-- Total Events -->
+  <div class="metric-card" style="border-left: 4px solid #0d9488;">
+    <div class="metric-label">Events Hosted</div>
+    <div class="metric-value" style="color: #0d9488;">{{ vendor_events.count }}</div>
+    <div class="metric-subtitle">Total catalog events</div>
+  </div>
+
+  <!-- Active Events -->
+  <div class="metric-card" style="border-left: 4px solid #059669;">
+    <div class="metric-label">Active Events</div>
+    <div class="metric-value" style="color: #059669;">{{ active_events_count }}</div>
+    <div class="metric-subtitle">Currently active for booking/running</div>
+  </div>
+
+  <!-- Total Seats Hosted -->
+  <div class="metric-card" style="border-left: 4px solid #0d9488;">
+    <div class="metric-label">Total Seats Capacity</div>
+    <div class="metric-value" style="color: #0d9488;">{{ total_seats_hosted }}</div>
+    <div class="metric-subtitle">Across all hosted events</div>
+  </div>
+
+  <!-- Total Customer Bookings -->
+  <div class="metric-card" style="border-left: 4px solid #d97706;">
+    <div class="metric-label">Total Customer Bookings</div>
+    <div class="metric-value" style="color: #d97706;">{{ total_bookings_count }}</div>
+    <div class="metric-subtitle">Reservations across all events</div>
+  </div>
+</div>
+
+<!-- Vendor Profile Details Card -->
+<div class="form-card" style="max-width: 100%; margin-bottom: 2rem;">
+  <h3 style="margin-bottom: 1rem; color: #0d9488; font-size: 1.05rem; font-weight: 700;">Vendor Profile Information</h3>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.92rem; color: #334155;">
+    <div><strong style="color: #0f172a;">Company Name:</strong> {{ vendor.company_name }}</div>
+    <div><strong style="color: #0f172a;">Contact Email:</strong> {{ vendor.contact_email }}</div>
+    <div><strong style="color: #0f172a;">Contact Phone:</strong> {{ vendor.contact_phone|default:"Not specified" }}</div>
+    <div><strong style="color: #0f172a;">Joined Date:</strong> {{ vendor.created_at|date:"M d, Y" }}</div>
+  </div>
+  {% if vendor.description %}
+    <div style="margin-top: 1rem;">
+      <strong style="color: #0f172a; font-size: 0.92rem;">Description:</strong>
+      <div style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.88rem; line-height: 1.5; color: #475569; margin-top: 0.35rem;">
+        {{ vendor.description }}
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Hosted Events Catalog Table -->
+<div class="card-table">
+  <div class="table-header-bar">
+    <h3 style="font-size: 1.05rem; font-weight: 700; color: #0f172a;">Events Hosted by {{ vendor.company_name }}</h3>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Event Title</th>
+        <th>Venue</th>
+        <th>Start Date</th>
+        <th>Available / Total Seats</th>
+        <th>Price</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in vendor_events %}
+        <tr>
+          <td>
+            <a href="{% url 'dashboard:event-detail' event.id %}" style="color: #0d9488; font-weight: 700; text-decoration: none;">
+              {{ event.title }}
+            </a>
+          </td>
+          <td>{{ event.venue }}</td>
+          <td>{{ event.start_date|date:"M d, Y H:i" }}</td>
+          <td>
+            <span style="color: {% if event.available_seats == 0 %}#dc2626{% else %}#16a34a{% endif %}; font-weight: 700;">
+              {{ event.available_seats }}
+            </span> / {{ event.total_seats }}
+          </td>
+          <td>${{ event.price }}</td>
+          <td>
+            <span class="badge badge-{% if event.is_active %}success{% else %}danger{% endif %}">
+              {% if event.is_active %}Active{% else %}Inactive{% endif %}
+            </span>
+          </td>
+          <td>
+            <a href="{% url 'dashboard:event-detail' event.id %}" class="btn btn-secondary btn-sm btn-view">View Event</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No events hosted by this vendor yet.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

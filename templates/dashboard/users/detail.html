@@ -1,0 +1,342 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}User Detail — {{ target_user.email }}{% endblock %}
+
+{% block content %}
+<style>
+  /* Binary Tree CSS Hierarchy Diagram */
+  .binary-tree-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  .binary-tree-wrapper ul {
+    display: flex;
+    padding-top: 24px;
+    position: relative;
+    justify-content: center;
+    margin: 0;
+    padding-left: 0;
+  }
+  .binary-tree-wrapper li {
+    float: left;
+    text-align: center;
+    list-style-type: none;
+    position: relative;
+    padding: 24px 12px 0 12px;
+  }
+  /* Connector Lines */
+  .binary-tree-wrapper li::before, 
+  .binary-tree-wrapper li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 50%;
+    border-top: 2px solid #cbd5e1;
+    width: 50%;
+    height: 24px;
+  }
+  .binary-tree-wrapper li::after {
+    right: auto;
+    left: 50%;
+    border-left: 2px solid #cbd5e1;
+  }
+  .binary-tree-wrapper li:only-child::after, 
+  .binary-tree-wrapper li:only-child::before {
+    display: none;
+  }
+  .binary-tree-wrapper li:only-child {
+    padding-top: 0;
+  }
+  .binary-tree-wrapper li:first-child::before, 
+  .binary-tree-wrapper li:last-child::after {
+    border: 0 none;
+  }
+  .binary-tree-wrapper li:last-child::before {
+    border-right: 2px solid #cbd5e1;
+    border-radius: 0 6px 0 0;
+  }
+  .binary-tree-wrapper li:first-child::after {
+    border-radius: 6px 0 0 0;
+  }
+  .binary-tree-wrapper ul ul::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    border-left: 2px solid #cbd5e1;
+    width: 0;
+    height: 24px;
+  }
+
+  /* Node Cards */
+  .tree-node-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.9rem 1.1rem;
+    min-width: 180px;
+    max-width: 220px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 2;
+    transition: all 0.2s ease-in-out;
+  }
+  .tree-node-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.15);
+    border-color: #38bdf8;
+  }
+  .tree-node-card.empty-node {
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    box-shadow: none;
+    padding: 0.75rem 1rem;
+    opacity: 0.7;
+  }
+  .tree-node-card.empty-node:hover {
+    transform: none;
+    border-color: #94a3b8;
+  }
+  .tree-branch-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .badge-root { background: #ccfbf1; color: #0f766e; }
+  .badge-left { background: #dcfce7; color: #15803d; }
+  .badge-right { background: #fef3c7; color: #b45309; }
+
+  .tree-user-icon {
+    font-size: 1.5rem;
+    margin: 0.1rem 0;
+  }
+  .tree-user-email {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #0f172a;
+    max-width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tree-ref-code {
+    font-size: 0.78rem;
+  }
+  .tree-ref-code code {
+    background: #ccfbf1;
+    color: #0f766e;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">User Profile & Referral Tree</h1>
+    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Detailed information and referral network placement for {{ target_user.email }}</p>
+  </div>
+  <a href="{% url 'dashboard:user-list' %}" class="btn btn-secondary">← Back to Users List</a>
+</div>
+
+<!-- User Overview Grid -->
+<div class="stats-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 2rem;">
+  <!-- User Profile Info -->
+  <div class="form-card" style="max-width: 100%;">
+    <h3 style="margin-bottom: 1rem; color: #0d9488; font-size: 1.1rem; font-weight: 700;">User Profile Information</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.92rem; color: #334155;">
+      <div><strong style="color: #0f172a;">Email:</strong> {{ target_user.email }}</div>
+      <div><strong style="color: #0f172a;">Username:</strong> {{ target_user.username }}</div>
+      <div><strong style="color: #0f172a;">Full Name:</strong> {{ target_user.get_full_name|default:"Not provided" }}</div>
+      <div><strong style="color: #0f172a;">Referral Code:</strong> <code style="background: #f0fdfa; color: #0d9488; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 700; border: 1px solid #99f6e4;">{{ target_user.referral_code }}</code></div>
+      <div><strong style="color: #0f172a;">Referred By:</strong> {{ target_user.referred_by.email|default:"Direct Registration (No Referrer)" }}</div>
+      <div><strong style="color: #0f172a;">Staff Role:</strong> {% if target_user.is_staff %}<span class="badge badge-info">Staff</span>{% else %}<span class="badge badge-success">Customer</span>{% endif %}</div>
+      <div><strong style="color: #0f172a;">Date Joined:</strong> {{ target_user.date_joined|date:"M d, Y H:i" }}</div>
+    </div>
+  </div>
+
+  <!-- Referral Tree Stats -->
+  <div class="form-card" style="max-width: 100%;">
+    <h3 style="margin-bottom: 1rem; color: #0d9488; font-size: 1.1rem; font-weight: 700;">Binary Referral Tree Metrics</h3>
+    {% if stats %}
+      <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.92rem; color: #334155;">
+        <div><strong style="color: #0f172a;">Left Subtree Count:</strong> <span style="color: #059669; font-weight: 700;">{{ stats.left_count }}</span> nodes</div>
+        <div><strong style="color: #0f172a;">Right Subtree Count:</strong> <span style="color: #d97706; font-weight: 700;">{{ stats.right_count }}</span> nodes</div>
+        <div><strong style="color: #0f172a;">Total Team Size:</strong> <span style="color: #0d9488; font-weight: 700;">{{ stats.total_team_count }}</span> referrals</div>
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted); font-size: 0.9rem;">This user has not referred anyone or been placed in a network yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Referral Tree Hierarchy Visualizer -->
+<div class="card-table" style="padding: 1.5rem; margin-bottom: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h3 style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin: 0;">Binary Referral Tree Graph</h3>
+      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.2rem;">Visual hierarchy diagram of network placements (Left & Right subtrees)</p>
+    </div>
+    {% if tree_dict %}
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <button type="button" id="btn-toggle-view" class="btn btn-secondary btn-sm" onclick="toggleTreeFormat()">
+          Show Raw JSON
+        </button>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if tree_dict %}
+    <!-- Visual Graph Container -->
+    <div id="tree-graph-container" style="overflow-x: auto; padding: 1.5rem 0; min-height: 250px; background: #fafafa; border: 1px solid #e2e8f0; border-radius: 12px;">
+      <div class="binary-tree-wrapper">
+        <ul id="tree-root-ul"></ul>
+      </div>
+    </div>
+
+    <!-- Raw JSON Container (Hidden by default) -->
+    <div id="tree-json-container" style="display: none; margin-top: 1rem;">
+      <pre style="background: #0f172a; color: #f8fafc; padding: 1.25rem; border-radius: 10px; font-size: 0.85rem; font-family: monospace; overflow-x: auto;">{{ tree_dict|pprint }}</pre>
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted); background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+      <div style="font-size: 2.5rem; margin-bottom: 0.5rem; color: #cbd5e1;">🌿</div>
+      <p style="font-size: 0.95rem; font-weight: 600; color: #475569; margin: 0;">No referral tree nodes found</p>
+      <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 0.25rem;">This user is not placed in any binary referral tree yet.</p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Customer Booking History -->
+<div class="card-table">
+  <div class="table-header-bar">
+    <h3 style="font-size: 1.05rem; font-weight: 700; color: #0f172a;">Booking History for {{ target_user.email }}</h3>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Booking ID</th>
+        <th>Event</th>
+        <th>Seats</th>
+        <th>Total Price</th>
+        <th>Status</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in user_bookings %}
+        <tr>
+          <td>
+            <a href="{% url 'dashboard:booking-detail' b.id %}" style="color: #0d9488; text-decoration: none; font-weight: 700;">
+              #{{ b.id|slice:":8"|upper }}
+            </a>
+          </td>
+          <td>
+            <a href="{% url 'dashboard:event-detail' b.event.id %}" style="color: var(--text-primary); text-decoration: none; font-weight: 500;">
+              {{ b.event.title }}
+            </a>
+          </td>
+          <td>{{ b.seats }}</td>
+          <td>${{ b.total_price }}</td>
+          <td>
+            <span class="badge badge-{% if b.status == 'confirmed' %}success{% elif b.status == 'cancelled' or b.status == 'failed' %}danger{% else %}warning{% endif %}">
+              {{ b.status }}
+            </span>
+          </td>
+          <td>{{ b.created_at|date:"M d, Y H:i" }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No bookings recorded for this user.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if tree_dict %}
+  {{ tree_dict|json_script:"tree-data-json" }}
+
+  <script>
+    function renderTreeNode(node, position = 'ROOT') {
+      if (!node) {
+        return `
+          <li>
+            <div class="tree-node-card empty-node">
+              <div style="font-size: 1.1rem; color: #cbd5e1;">➕</div>
+              <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 600;">Empty ${position} Slot</div>
+            </div>
+          </li>
+        `;
+      }
+
+      const isRoot = position === 'ROOT';
+      const badgeClass = isRoot ? 'badge-root' : (position === 'LEFT' ? 'badge-left' : 'badge-right');
+      const badgeText = isRoot ? 'ROOT USER' : `${position} BRANCH`;
+
+      let childrenHTML = '';
+      if (node.left_child || node.right_child) {
+        childrenHTML = `
+          <ul>
+            ${renderTreeNode(node.left_child, 'LEFT')}
+            ${renderTreeNode(node.right_child, 'RIGHT')}
+          </ul>
+        `;
+      }
+
+      return `
+        <li>
+          <div class="tree-node-card">
+            <span class="tree-branch-badge ${badgeClass}">${badgeText}</span>
+            <div class="tree-user-icon">👤</div>
+            <div class="tree-user-email" title="${node.email}">${node.email}</div>
+            <div class="tree-ref-code"><code>${node.referral_code}</code></div>
+          </div>
+          ${childrenHTML}
+        </li>
+      `;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const jsonElem = document.getElementById('tree-data-json');
+      if (jsonElem && jsonElem.textContent.trim()) {
+        try {
+          const treeData = JSON.parse(jsonElem.textContent);
+          if (treeData) {
+            const rootUl = document.getElementById('tree-root-ul');
+            if (rootUl) {
+              rootUl.innerHTML = renderTreeNode(treeData, 'ROOT');
+            }
+          }
+        } catch (e) {
+          console.error('Failed to parse referral tree JSON', e);
+        }
+      }
+    });
+
+    function toggleTreeFormat() {
+      const graphContainer = document.getElementById('tree-graph-container');
+      const jsonContainer = document.getElementById('tree-json-container');
+      const btn = document.getElementById('btn-toggle-view');
+
+      if (graphContainer.style.display === 'none') {
+        graphContainer.style.display = 'block';
+        jsonContainer.style.display = 'none';
+        btn.innerText = 'Show Raw JSON';
+      } else {
+        graphContainer.style.display = 'none';
+        jsonContainer.style.display = 'block';
+        btn.innerText = 'Show Tree Graph';
+      }
+    }
+  </script>
+{% endif %}
+{% endblock %}

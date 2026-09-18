@@ -1,0 +1,182 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Event Detail — {{ event.title }}{% endblock %}
+
+{% block content %}
+<style>
+  .show-badge {
+    display: inline-block;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .show-badge.upcoming        { background: #ccfbf1; color: #0f766e; }
+  .show-badge.booking_enabled  { background: #fef9c3; color: #854d0e; }
+  .show-badge.running         { background: #dcfce7; color: #15803d; }
+  .show-badge.expired         { background: #fee2e2; color: #b91c1c; }
+
+  .metric-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  .metric-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+  }
+  .metric-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .metric-subtitle {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+      <h1 class="page-title" style="margin: 0;">{{ event.title }}</h1>
+      <span class="badge badge-{% if event.is_active %}success{% else %}danger{% endif %}">
+        {% if event.is_active %}Active{% else %}Inactive{% endif %}
+      </span>
+      <span class="show-badge {{ event.show_status }}">
+        {% if event.show_status == 'upcoming' %}Upcoming
+        {% elif event.show_status == 'booking_enabled' %}Booking Enabled
+        {% elif event.show_status == 'running' %}Running
+        {% elif event.show_status == 'expired' %}Expired
+        {% else %}{{ event.show_status }}
+        {% endif %}
+      </span>
+    </div>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">Organized by <strong>{{ event.vendor.company_name }}</strong> &bull; {{ event.venue }}</p>
+  </div>
+  <div style="display: flex; gap: 0.5rem;">
+    <a href="{% url 'dashboard:event-edit' event.id %}" class="btn btn-primary">Edit Event</a>
+    <a href="{% url 'dashboard:event-list' %}" class="btn btn-secondary">← Back to Catalog</a>
+  </div>
+</div>
+
+<!-- Seat Metrics Grid -->
+<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 2rem;">
+  <!-- Card 1: Available Seats -->
+  <div class="metric-card" style="border-left: 4px solid #16a34a;">
+    <div class="metric-label">Available Seats</div>
+    <div class="metric-value" style="color: #16a34a;">{{ event.available_seats }}</div>
+    <div class="metric-subtitle">Out of {{ event.total_seats }} total capacity</div>
+  </div>
+
+  <!-- Card 2: Reserved Seats -->
+  <div class="metric-card" style="border-left: 4px solid #d97706;">
+    <div class="metric-label">Reserved Seats (On Hold)</div>
+    <div class="metric-value" style="color: #d97706;">{{ event.reserved_seats }}</div>
+    <div class="metric-subtitle">Pending payment / confirmation</div>
+  </div>
+
+  <!-- Card 3: Seat Booking Limits -->
+  <div class="metric-card" style="border-left: 4px solid #0d9488;">
+    <div class="metric-label">Per-Booking Limits</div>
+    <div class="metric-value" style="color: #0d9488;">{{ event.min_seats_per_booking }} &ndash; {{ event.max_seats_per_booking }}</div>
+    <div class="metric-subtitle">Min {{ event.min_seats_per_booking }} to Max {{ event.max_seats_per_booking }} seats/order</div>
+  </div>
+
+  <!-- Card 4: Ticket Price -->
+  <div class="metric-card" style="border-left: 4px solid #0d9488;">
+    <div class="metric-label">Ticket Price</div>
+    <div class="metric-value" style="color: #0d9488;">${{ event.price }}</div>
+    <div class="metric-subtitle">Price per seat</div>
+  </div>
+</div>
+
+<!-- Event Info Overview Grid -->
+<div class="stats-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 2rem;">
+  <!-- Schedule Card -->
+  <div class="form-card" style="max-width: 100%;">
+    <h3 style="margin-bottom: 1rem; color: #0d9488; font-size: 1.05rem; font-weight: 700;">Schedule & Timings</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.92rem; color: #334155;">
+      <div><strong style="color: #0f172a;">Venue Location:</strong> {{ event.venue }}</div>
+      <div><strong style="color: #0f172a;">Event Start:</strong> {{ event.start_date|date:"M d, Y H:i" }}</div>
+      <div><strong style="color: #0f172a;">Event End:</strong> {{ event.end_date|date:"M d, Y H:i" }}</div>
+      <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 0.25rem 0;">
+      <div><strong style="color: #0f172a;">Booking Start:</strong> {{ event.booking_start_date|date:"M d, Y H:i" }}</div>
+      <div><strong style="color: #0f172a;">Booking End:</strong> {{ event.booking_end_date|date:"M d, Y H:i"|default:"Until Show Start" }}</div>
+      <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 0.25rem 0;">
+      <div><strong style="color: #0f172a;">Show Start:</strong> {{ event.show_start_date|date:"M d, Y H:i" }}</div>
+      <div><strong style="color: #0f172a;">Show End:</strong> {{ event.show_end_date|date:"M d, Y H:i" }}</div>
+    </div>
+  </div>
+
+  <!-- Vendor Card -->
+  <div class="form-card" style="max-width: 100%;">
+    <h3 style="margin-bottom: 1rem; color: #059669; font-size: 1.05rem; font-weight: 700;">Vendor & Description</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.92rem; color: #334155;">
+      <div><strong style="color: #0f172a;">Vendor Company:</strong> {{ event.vendor.company_name }}</div>
+      <div><strong style="color: #0f172a;">Contact Email:</strong> {{ event.vendor.contact_email }}</div>
+      <div><strong style="color: #0f172a;">Contact Phone:</strong> {{ event.vendor.contact_phone|default:"Not specified" }}</div>
+      <div><strong style="color: #0f172a;">Vendor Status:</strong>
+        <span class="badge badge-{% if event.vendor.is_active %}success{% else %}danger{% endif %}">
+          {% if event.vendor.is_active %}Active{% else %}Inactive{% endif %}
+        </span>
+      </div>
+      <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 0.25rem 0;">
+      <div><strong style="color: #0f172a;">Description:</strong></div>
+      <div style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.88rem; line-height: 1.5; color: #475569;">
+        {{ event.description|default:"No description provided for this event." }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Event Bookings Table -->
+<div class="card-table">
+  <div class="table-header-bar">
+    <h3 style="font-size: 1.05rem; font-weight: 700; color: #0f172a;">Recent Bookings for {{ event.title }}</h3>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Booking ID</th>
+        <th>Customer</th>
+        <th>Seats</th>
+        <th>Total Price</th>
+        <th>Status</th>
+        <th>Booked At</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in event_bookings %}
+        <tr>
+          <td><strong style="color: #0d9488;">#{{ b.id|slice:":8"|upper }}</strong></td>
+          <td>{{ b.user.email }}</td>
+          <td><strong>{{ b.seats }}</strong> seat(s)</td>
+          <td>${{ b.total_price }}</td>
+          <td>
+            <span class="badge badge-{% if b.status == 'confirmed' %}success{% elif b.status == 'cancelled' or b.status == 'failed' %}danger{% else %}warning{% endif %}">
+              {{ b.status }}
+            </span>
+          </td>
+          <td>{{ b.created_at|date:"M d, Y H:i" }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No bookings recorded for this event yet.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

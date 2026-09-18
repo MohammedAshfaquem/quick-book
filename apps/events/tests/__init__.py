@@ -1,0 +1,3 @@
+"""
+Events tests package.
+"""

@@ -1,0 +1,74 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Vendors{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Vendor Profiles</h1>
+    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Manage organizer accounts and company profiles</p>
+  </div>
+  <a href="{% url 'dashboard:vendor-add' %}" class="btn btn-primary">+ Add New Vendor</a>
+</div>
+
+<div class="card-table">
+  <div class="table-header-bar">
+    <form method="GET" action="" style="display: flex; gap: 0.75rem; flex: 1; max-width: 500px; align-items: center;">
+      <input type="text" name="search" class="form-control" placeholder="Search by company name or email..." value="{{ request.GET.search|default:'' }}">
+      <select name="status" class="filter-select" onchange="this.form.submit()">
+        <option value="">All Statuses</option>
+        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+        <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactive</option>
+      </select>
+    </form>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Company Name</th>
+        <th class="hide-mobile">Contact Email</th>
+        <th class="hide-mobile">Contact Phone</th>
+        <th>Status</th>
+        <th class="hide-mobile">Created At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for vendor in vendors %}
+        <tr>
+          <td>
+            <a href="{% url 'dashboard:vendor-detail' vendor.id %}" style="color: #0d9488; text-decoration: none; font-weight: 700;">
+              {{ vendor.company_name }}
+            </a>
+          </td>
+          <td class="hide-mobile">{{ vendor.contact_email }}</td>
+          <td class="hide-mobile">{{ vendor.contact_phone }}</td>
+          <td>
+            <span class="badge badge-{% if vendor.is_active %}success{% else %}danger{% endif %}">
+              {% if vendor.is_active %}Active{% else %}Inactive{% endif %}
+            </span>
+          </td>
+          <td class="hide-mobile">{{ vendor.created_at|date:"M d, Y" }}</td>
+          <td>
+            <div style="display: flex; gap: 0.35rem; align-items: center;">
+              <a href="{% url 'dashboard:vendor-detail' vendor.id %}" class="btn btn-secondary btn-sm btn-view">View</a>
+              <a href="{% url 'dashboard:vendor-edit' vendor.id %}" class="btn btn-secondary btn-sm hide-mobile">Edit</a>
+              <form method="POST" action="{% url 'dashboard:vendor-toggle-status' vendor.id %}" class="hide-mobile" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-{% if vendor.is_active %}danger{% else %}primary{% endif %} btn-sm">
+                  {% if vendor.is_active %}Deactivate{% else %}Activate{% endif %}
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No vendors found.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+

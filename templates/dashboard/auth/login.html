@@ -1,0 +1,493 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — QuickBook Staff</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .login-split-container {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    /* Left Form Column */
+    .login-form-side {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2.5rem;
+      background-color: #ffffff;
+    }
+
+    .login-form-inner {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .brand-header {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      margin-bottom: 2.25rem;
+    }
+
+    .brand-logo-icon {
+      width: 50px;
+      height: 50px;
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0d9488;
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.08);
+    }
+
+    .brand-titles .brand-name {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #0f172a;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .brand-titles .brand-sub {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .login-heading-group {
+      margin-bottom: 2rem;
+    }
+
+    .login-heading-group .login-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 0.35rem;
+      letter-spacing: -0.02em;
+    }
+
+    .login-heading-group .login-subtitle {
+      font-size: 0.9rem;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    /* Form Inputs */
+    .form-group {
+      margin-bottom: 1.35rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 0.45rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background-color: #f1f5f9 !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 10px !important;
+      color: #0f172a !important;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+      outline: none;
+      background-color: #ffffff !important;
+      border-color: #0d9488 !important;
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15) !important;
+    }
+
+    .password-wrapper .form-control {
+      padding-right: 2.75rem;
+    }
+
+    .password-toggle-btn {
+      position: absolute;
+      right: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+
+    .password-toggle-btn:hover {
+      color: #0d9488;
+    }
+
+    /* Submit Button */
+    .btn-submit-login {
+      width: 100%;
+      padding: 0.9rem 1.5rem;
+      background-color: #0d9488 !important;
+      color: #ffffff !important;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);
+      transition: all 0.2s ease;
+      margin-top: 0.75rem;
+    }
+
+    .btn-submit-login:hover {
+      background-color: #0f766e !important;
+      box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* Alerts */
+    .alert {
+      padding: 0.85rem 1.25rem;
+      border-radius: 10px;
+      margin-bottom: 1.25rem;
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    .alert-error {
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
+    .alert-success {
+      background-color: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+
+    /* Right Section: Hero Display */
+    .login-hero-side {
+      flex: 1.1;
+      background: linear-gradient(135deg, #f0fdfa 0%, #f5fefd 50%, #e6fffa 100%);
+      padding: 3rem 4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      border-left: 1px solid #ccfbf1;
+    }
+
+    .hero-content-wrapper {
+      max-width: 480px;
+      text-align: center;
+    }
+
+    .hero-title {
+      font-size: 2.1rem;
+      font-weight: 800;
+      color: #0f766e;
+      margin-bottom: 1rem;
+      letter-spacing: -0.025em;
+      line-height: 1.25;
+    }
+
+    .hero-description {
+      font-size: 0.95rem;
+      color: #475569;
+      line-height: 1.6;
+      margin-bottom: 2.5rem;
+      font-weight: 500;
+    }
+
+    /* Illustration Card Graphic */
+    .hero-illustration-card {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 20px 40px -15px rgba(13, 148, 136, 0.15), 0 0 0 1px rgba(13, 148, 136, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .counter-desk {
+      background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+      border-radius: 16px;
+      padding: 2rem 2.5rem;
+      width: 100%;
+      max-width: 360px;
+      color: #ffffff;
+      box-shadow: 0 12px 30px rgba(13, 148, 136, 0.3);
+      position: relative;
+    }
+
+    .pos-screen {
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+      border: 2px solid #2dd4bf;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .screen-header {
+      height: 8px;
+      background: #2dd4bf;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+      width: 40%;
+    }
+
+    .screen-body .screen-line {
+      height: 6px;
+      background: #334155;
+      border-radius: 3px;
+      margin-bottom: 0.5rem;
+    }
+
+    .screen-line.long { width: 85%; }
+    .screen-line.short { width: 60%; }
+
+    .screen-badge {
+      display: inline-block;
+      background: #0d9488;
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    .ticket-dispenser {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 1rem;
+    }
+
+    .dispenser-ticket {
+      background: #f59e0b;
+      color: #78350f;
+      font-weight: 900;
+      font-size: 0.75rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      letter-spacing: 0.08em;
+      transform: rotate(-3deg);
+      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+    }
+
+    .desk-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 900px) {
+      .login-split-container {
+        flex-direction: column;
+      }
+      .login-hero-side {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-split-container">
+    <!-- Left Column: Clean Form -->
+    <div class="login-form-side">
+      <div class="login-form-inner">
+
+        <!-- Logo & Brand Header -->
+        <div class="brand-header">
+          <div class="brand-logo-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"/>
+              <path d="M13 5v14"/>
+              <path d="M9 9h.01"/>
+              <path d="M9 15h.01"/>
+            </svg>
+          </div>
+          <div class="brand-titles">
+            <h1 class="brand-name">QUICKBOOK</h1>
+            <span class="brand-sub">Event & Booking Platform</span>
+          </div>
+        </div>
+
+        <!-- Form Main Heading -->
+        <div class="login-heading-group">
+          <h2 class="login-title">Sign In</h2>
+          <p class="login-subtitle">Welcome back! Access your event management dashboard.</p>
+        </div>
+
+        <!-- Messages / Alerts -->
+        {% if messages %}
+          {% for message in messages %}
+            {% if message.tags == 'error' %}
+              <div class="modal-backdrop" id="errorModal">
+                <div class="modal-card">
+                  <div class="modal-header-icon error">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="12" y1="8" x2="12" y2="12"/>
+                      <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                  </div>
+                  <h3 class="modal-title">Authentication Required</h3>
+                  <p class="modal-body-text">{{ message }}</p>
+                  <button type="button" class="btn btn-primary modal-action-btn" onclick="closeModal()">Dismiss</button>
+                </div>
+              </div>
+            {% else %}
+              <div class="alert alert-success">
+                {{ message }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        <!-- Login Form -->
+        <form method="POST" action="{% url 'dashboard:login' %}" class="login-form">
+          {% csrf_token %}
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address</label>
+            <div class="input-wrapper">
+              <input type="email" id="email" name="email" class="form-control" placeholder="staff@quickbook.com" required autofocus>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <div class="input-wrapper password-wrapper">
+              <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+              <button type="button" class="password-toggle-btn" id="togglePassword" aria-label="Toggle password visibility">
+                <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-submit-login">
+            Sign In to Dashboard
+          </button>
+        </form>
+
+      </div>
+    </div>
+
+    <!-- Right Column: Hero Banner -->
+    <div class="login-hero-side">
+      <div class="hero-content-wrapper">
+        <h2 class="hero-title">Smart Event & Booking System</h2>
+        <p class="hero-description">
+          Issue tickets, select seats, manage vendor events, and track bookings instantly in one unified operational system.
+        </p>
+
+        <!-- Vector Graphic Illustration -->
+        <div class="hero-illustration-card">
+          <div class="counter-desk">
+            <div class="pos-screen">
+              <div class="screen-header"></div>
+              <div class="screen-body">
+                <div class="screen-line long"></div>
+                <div class="screen-line short"></div>
+                <div class="screen-badge">SEATS: 28</div>
+              </div>
+            </div>
+            <div class="ticket-dispenser">
+              <div class="dispenser-ticket">TICKETS</div>
+            </div>
+            <div class="desk-logo">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"/>
+              </svg>
+              QUICKBOOK
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    togglePassword.addEventListener('click', function () {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+
+      if (type === 'text') {
+        eyeIcon.innerHTML = `
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+          <line x1="1" y1="1" x2="23" y2="23"/>
+        `;
+      } else {
+        eyeIcon.innerHTML = `
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        `;
+      }
+    });
+
+    function closeModal() {
+      const modal = document.getElementById('errorModal');
+      if (modal) {
+        modal.style.opacity = '0';
+        setTimeout(() => modal.remove(), 200);
+      }
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Booking Detail — #{{ booking.id|slice:":8"|upper }}{% endblock %}
+
+{% block content %}
+<style>
+  .metric-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  .metric-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+  }
+  .metric-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .metric-subtitle {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+      <h1 class="page-title" style="margin: 0;">Booking #{{ booking.id|slice:":8"|upper }}</h1>
+      <span class="badge badge-{% if booking.status == 'confirmed' %}success{% elif booking.status == 'cancelled' or booking.status == 'failed' %}danger{% else %}warning{% endif %}" style="font-size: 0.85rem;">
+        {{ booking.status|upper }}
+      </span>
+    </div>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">Full UUID: <code style="background: #f1f5f9; padding: 0.15rem 0.4rem; border-radius: 4px; font-family: monospace;">{{ booking.id }}</code></p>
+  </div>
+  <div style="display: flex; gap: 0.5rem; align-items: center;">
+    <form method="POST" action="{% url 'dashboard:booking-status-update' booking.id %}" style="display: flex; gap: 0.5rem; align-items: center;">
+      {% csrf_token %}
+      <select name="status" class="filter-select" style="padding: 0.5rem 2rem 0.5rem 0.75rem; font-size: 0.85rem;" onchange="this.form.submit()">
+        <option value="confirmed" {% if booking.status == 'confirmed' %}selected{% endif %}>Set Confirmed</option>
+        <option value="pending" {% if booking.status == 'pending' %}selected{% endif %}>Set Pending</option>
+        <option value="cancelled" {% if booking.status == 'cancelled' %}selected{% endif %}>Set Cancelled</option>
+        <option value="failed" {% if booking.status == 'failed' %}selected{% endif %}>Set Failed</option>
+      </select>
+    </form>
+    <a href="{% url 'dashboard:booking-list' %}" class="btn btn-secondary">← Back to Bookings</a>
+  </div>
+</div>
+
+<!-- Booking Metrics Grid -->
+<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 2rem;">
+  <!-- Card 1: Seats -->
+  <div class="metric-card" style="border-left: 4px solid #0d9488;">
+    <div class="metric-label">Seats Reserved</div>
+    <div class="metric-value" style="color: #0d9488;">{{ booking.seats }}</div>
+    <div class="metric-subtitle">Ticket quantity</div>
+  </div>
+
+  <!-- Card 2: Total Price -->
+  <div class="metric-card" style="border-left: 4px solid #059669;">
+    <div class="metric-label">Total Price</div>
+    <div class="metric-value" style="color: #059669;">${{ booking.total_price }}</div>
+    <div class="metric-subtitle">${{ booking.event.price }} per seat</div>
+  </div>
+
+  <!-- Card 3: Booking Status -->
+  <div class="metric-card" style="border-left: 4px solid {% if booking.status == 'confirmed' %}#059669{% elif booking.status == 'cancelled' or booking.status == 'failed' %}#dc2626{% else %}#d97706{% endif %};">
+    <div class="metric-label">Current Status</div>
+    <div class="metric-value" style="color: {% if booking.status == 'confirmed' %}#059669{% elif booking.status == 'cancelled' or booking.status == 'failed' %}#dc2626{% else %}#d97706{% endif %}; font-size: 1.3rem;">
+      {{ booking.status|upper }}
+    </div>
+    <div class="metric-subtitle">System reservation state</div>
+  </div>
+
+  <!-- Card 4: Date Booked -->
+  <div class="metric-card" style="border-left: 4px solid #0d9488;">
+    <div class="metric-label">Booking Timestamp</div>
+    <div class="metric-value" style="color: #0d9488; font-size: 1.15rem;">{{ booking.created_at|date:"M d, Y" }}</div>
+    <div class="metric-subtitle">{{ booking.created_at|date:"H:i:s T" }}</div>
+  </div>
+</div>
+
+<!-- Customer & Event Overview Grid -->
+<div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+  <!-- Customer Profile Card -->
+  <div class="form-card" style="max-width: 100%;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 style="color: #0d9488; font-size: 1.05rem; font-weight: 700; margin: 0;">Customer Information</h3>
+      <a href="{% url 'dashboard:user-detail' booking.user.id %}" class="btn btn-secondary btn-sm">View User Profile &rarr;</a>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.92rem; color: #334155;">
+      <div><strong style="color: #0f172a;">Customer Email:</strong> {{ booking.user.email }}</div>
+      <div><strong style="color: #0f172a;">Username:</strong> {{ booking.user.username }}</div>
+      <div><strong style="color: #0f172a;">Referral Code:</strong> <code style="background: #f0fdfa; color: #0d9488; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 700; border: 1px solid #99f6e4;">{{ booking.user.referral_code }}</code></div>
+      <div><strong style="color: #0f172a;">Referred By:</strong> {{ booking.user.referred_by.email|default:"Direct Registration" }}</div>
+      <div><strong style="color: #0f172a;">Role:</strong> {% if booking.user.is_staff %}<span class="badge badge-info">Staff</span>{% else %}<span class="badge badge-success">Customer</span>{% endif %}</div>
+    </div>
+  </div>
+
+  <!-- Event & Vendor Details Card -->
+  <div class="form-card" style="max-width: 100%;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 style="color: #0d9488; font-size: 1.05rem; font-weight: 700; margin: 0;">Event Details</h3>
+      <a href="{% url 'dashboard:event-detail' booking.event.id %}" class="btn btn-secondary btn-sm">View Event Page &rarr;</a>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.92rem; color: #334155;">
+      <div><strong style="color: #0f172a;">Event Title:</strong> {{ booking.event.title }}</div>
+      <div><strong style="color: #0f172a;">Organizer Vendor:</strong> {{ booking.event.vendor.company_name }}</div>
+      <div><strong style="color: #0f172a;">Venue Location:</strong> {{ booking.event.venue }}</div>
+      <div><strong style="color: #0f172a;">Event Start:</strong> {{ booking.event.start_date|date:"M d, Y H:i" }}</div>
+      <div><strong style="color: #0f172a;">Event End:</strong> {{ booking.event.end_date|date:"M d, Y H:i" }}</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

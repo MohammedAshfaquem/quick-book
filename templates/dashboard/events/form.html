@@ -1,0 +1,114 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}{% if event %}Edit Event{% else %}Add Event{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{% if event %}Edit Event: {{ event.title }}{% else %}Add New Event{% endif %}</h1>
+    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Set up event schedule, vendor, capacity, and pricing</p>
+  </div>
+  <a href="{% url 'dashboard:event-list' %}" class="btn btn-secondary">← Back to List</a>
+</div>
+
+<div class="form-card" style="max-width: 750px;">
+  <form method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+      <label class="form-label" for="vendor_id">Organizer Vendor</label>
+      <select id="vendor_id" name="vendor_id" class="form-control" required>
+        <option value="">-- Select Vendor --</option>
+        {% for vendor in vendors %}
+          <option value="{{ vendor.id }}" {% if event and event.vendor.id == vendor.id %}selected{% endif %}>
+            {{ vendor.company_name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="title">Event Title</label>
+      <input type="text" id="title" name="title" class="form-control" value="{{ event.title|default:'' }}" required>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="description">Description</label>
+      <textarea id="description" name="description" class="form-control" rows="3">{{ event.description|default:'' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="venue">Venue Location</label>
+      <input type="text" id="venue" name="venue" class="form-control" value="{{ event.venue|default:'' }}" required>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="form-group">
+        <label class="form-label" for="start_date">Start Date & Time</label>
+        <input type="datetime-local" id="start_date" name="start_date" class="form-control" value="{{ event.start_date|date:'Y-m-d\TH:i' }}" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="end_date">End Date & Time</label>
+        <input type="datetime-local" id="end_date" name="end_date" class="form-control" value="{{ event.end_date|date:'Y-m-d\TH:i' }}" required>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="form-group">
+        <label class="form-label" for="booking_start_date">Booking Start Date</label>
+        <input type="datetime-local" id="booking_start_date" name="booking_start_date" class="form-control" value="{{ event.booking_start_date|date:'Y-m-d\TH:i' }}" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="booking_end_date">Booking End Date (Optional)</label>
+        <input type="datetime-local" id="booking_end_date" name="booking_end_date" class="form-control" value="{{ event.booking_end_date|date:'Y-m-d\TH:i' }}">
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="form-group">
+        <label class="form-label" for="show_start_date">Show Start Date</label>
+        <input type="datetime-local" id="show_start_date" name="show_start_date" class="form-control" value="{{ event.show_start_date|date:'Y-m-d\TH:i' }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="show_end_date">Show End Date</label>
+        <input type="datetime-local" id="show_end_date" name="show_end_date" class="form-control" value="{{ event.show_end_date|date:'Y-m-d\TH:i' }}">
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="form-group">
+        <label class="form-label" for="total_seats">Total Capacity (Seats)</label>
+        <input type="number" id="total_seats" name="total_seats" class="form-control" min="1" value="{{ event.total_seats|default:'100' }}" required {% if event %}readonly{% endif %}>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="price">Ticket Price ($)</label>
+        <input type="number" step="0.01" id="price" name="price" class="form-control" value="{{ event.price|default:'50.00' }}" required>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="form-group">
+        <label class="form-label" for="min_seats_per_booking">Min Seats Per Booking</label>
+        <input type="number" id="min_seats_per_booking" name="min_seats_per_booking" class="form-control" min="1" value="{{ event.min_seats_per_booking|default:'1' }}" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="max_seats_per_booking">Max Seats Per Booking</label>
+        <input type="number" id="max_seats_per_booking" name="max_seats_per_booking" class="form-control" min="1" value="{{ event.max_seats_per_booking|default:'10' }}" required>
+      </div>
+    </div>
+
+    <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+      <input type="checkbox" id="is_active" name="is_active" {% if event is None or event.is_active %}checked{% endif %}>
+      <label for="is_active" style="color: var(--text-primary); font-size: 0.9rem; cursor: pointer;">Active Status</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">
+      {% if event %}Save Changes{% else %}Create Event{% endif %}
+    </button>
+  </form>
+</div>
+{% endblock %}

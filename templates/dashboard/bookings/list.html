@@ -1,0 +1,90 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Bookings{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Customer Bookings</h1>
+    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">View and manage customer ticket reservations</p>
+  </div>
+</div>
+
+<div class="card-table">
+  <div class="table-header-bar">
+    <form method="GET" action="" style="display: flex; gap: 0.75rem; flex: 1; max-width: 550px; align-items: center;">
+      <input type="text" name="search" class="form-control" placeholder="Search booking code, customer email, or event..." value="{{ request.GET.search|default:'' }}">
+      <select name="status" class="filter-select" onchange="this.form.submit()">
+        <option value="">All Statuses</option>
+        <option value="confirmed" {% if request.GET.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+        <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+        <option value="failed" {% if request.GET.status == 'failed' %}selected{% endif %}>Failed</option>
+      </select>
+    </form>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Booking ID</th>
+        <th>Customer</th>
+        <th class="hide-mobile">Event</th>
+        <th class="hide-mobile">Seats</th>
+        <th class="hide-mobile">Total Price</th>
+        <th>Status</th>
+        <th class="hide-mobile">Booked At</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for booking in bookings %}
+        <tr>
+          <td>
+            <a href="{% url 'dashboard:booking-detail' booking.id %}" style="color: #0d9488; text-decoration: none; font-weight: 700;">
+              #{{ booking.id|slice:":8"|upper }}
+            </a>
+          </td>
+          <td>
+            <a href="{% url 'dashboard:user-detail' booking.user.id %}" style="color: var(--text-primary); text-decoration: none; font-weight: 500;">
+              {{ booking.user.email }}
+            </a>
+          </td>
+          <td class="hide-mobile">
+            <a href="{% url 'dashboard:event-detail' booking.event.id %}" style="color: var(--text-primary); text-decoration: none; font-weight: 500;">
+              {{ booking.event.title }}
+            </a>
+          </td>
+          <td class="hide-mobile">{{ booking.seats }}</td>
+          <td class="hide-mobile">${{ booking.total_price }}</td>
+          <td>
+            <span class="badge badge-{% if booking.status == 'confirmed' %}success{% elif booking.status == 'cancelled' or booking.status == 'failed' %}danger{% else %}warning{% endif %}">
+              {{ booking.status }}
+            </span>
+          </td>
+          <td class="hide-mobile">{{ booking.created_at|date:"M d, Y H:i" }}</td>
+          <td>
+            <div style="display: flex; gap: 0.35rem; align-items: center;">
+              <a href="{% url 'dashboard:booking-detail' booking.id %}" class="btn btn-secondary btn-sm btn-view">View</a>
+              <form method="POST" action="{% url 'dashboard:booking-status-update' booking.id %}" class="hide-mobile" style="display: inline-flex; gap: 0.35rem; align-items: center;">
+                {% csrf_token %}
+                <select name="status" class="filter-select" style="padding: 0.4rem 2rem 0.4rem 0.75rem; font-size: 0.8rem; min-width: 120px;" onchange="this.form.submit()">
+                  <option value="confirmed" {% if booking.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                  <option value="pending" {% if booking.status == 'pending' %}selected{% endif %}>Pending</option>
+                  <option value="cancelled" {% if booking.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                  <option value="failed" {% if booking.status == 'failed' %}selected{% endif %}>Failed</option>
+                </select>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No bookings found.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+
