@@ -4,6 +4,7 @@ class EventFields:
     TITLE = "title"
     DESCRIPTION = "description"
     VENUE = "venue"
+    BANNER_URL = "banner_url"
     START_DATE = "start_date"
     END_DATE = "end_date"
     BOOKING_START_DATE = "booking_start_date"

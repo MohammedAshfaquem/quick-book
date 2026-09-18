@@ -5,6 +5,7 @@ class VendorFields:
     CONTACT_EMAIL = "contact_email"
     CONTACT_PHONE = "contact_phone"
     DESCRIPTION   = "description"
+    LOGO_URL      = "logo_url"
     IS_ACTIVE     = "is_active"
 
     # Query param filter keys

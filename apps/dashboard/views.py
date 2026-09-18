@@ -126,6 +126,7 @@ class VendorAddView(StaffRequiredMixin, View):
         contact_email = request.POST.get(VendorFields.CONTACT_EMAIL, "").strip()
         contact_phone = request.POST.get(VendorFields.CONTACT_PHONE)
         description = request.POST.get(VendorFields.DESCRIPTION, "")
+        logo_url = request.POST.get(VendorFields.LOGO_URL, "")
         is_active = request.POST.get(CommonFields.IS_ACTIVE) == "on"
 
         if Vendor.objects.filter(contact_email__iexact=contact_email).exists():
@@ -138,6 +139,7 @@ class VendorAddView(StaffRequiredMixin, View):
                 contact_email=contact_email,
                 contact_phone=contact_phone,
                 description=description,
+                logo_url=logo_url,
                 is_active=is_active,
             )
         except IntegrityError:
@@ -159,6 +161,7 @@ class VendorEditView(StaffRequiredMixin, View):
         contact_email = request.POST.get(VendorFields.CONTACT_EMAIL, "").strip()
         contact_phone = request.POST.get(VendorFields.CONTACT_PHONE)
         description = request.POST.get(VendorFields.DESCRIPTION, "")
+        logo_url = request.POST.get(VendorFields.LOGO_URL, "")
         is_active = request.POST.get(CommonFields.IS_ACTIVE) == "on"
 
         if Vendor.objects.filter(contact_email__iexact=contact_email).exclude(pk=vendor.pk).exists():
@@ -170,6 +173,7 @@ class VendorEditView(StaffRequiredMixin, View):
             vendor.contact_email = contact_email
             vendor.contact_phone = contact_phone
             vendor.description = description
+            vendor.logo_url = logo_url
             vendor.is_active = is_active
             vendor.save()
         except IntegrityError:
@@ -264,6 +268,7 @@ class EventAddView(StaffRequiredMixin, View):
         title = request.POST.get(EventFields.TITLE)
         description = request.POST.get(EventFields.DESCRIPTION, "")
         venue = request.POST.get(EventFields.VENUE)
+        banner_url = request.POST.get(EventFields.BANNER_URL, "")
 
         start_date = parse_aware(request.POST.get(EventFields.START_DATE))
         end_date = parse_aware(request.POST.get(EventFields.END_DATE))
@@ -309,6 +314,7 @@ class EventAddView(StaffRequiredMixin, View):
             title=title,
             description=description,
             venue=venue,
+            banner_url=banner_url,
             start_date=start_date,
             end_date=end_date,
             booking_start_date=booking_start_date,
@@ -339,6 +345,7 @@ class EventEditView(StaffRequiredMixin, View):
         event.title = request.POST.get(EventFields.TITLE)
         event.description = request.POST.get(EventFields.DESCRIPTION, "")
         event.venue = request.POST.get(EventFields.VENUE)
+        event.banner_url = request.POST.get(EventFields.BANNER_URL, "")
 
         event.start_date = parse_aware(request.POST.get(EventFields.START_DATE)) or event.start_date
         event.end_date = parse_aware(request.POST.get(EventFields.END_DATE)) or event.end_date

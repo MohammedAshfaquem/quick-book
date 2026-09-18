@@ -16,6 +16,7 @@ class Vendor(BaseModel):
         validators=[phone_number_validator],
     )
     description = models.TextField(blank=True, default="")
+    logo_url = models.URLField(blank=True,default="")
 
     class Meta:
         verbose_name = VerboseNames.Vendor.NAME

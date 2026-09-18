@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from apps.core.messages import Messages
 from apps.vendors.models import Vendor
 
 
@@ -13,6 +14,7 @@ class VendorSerializer(serializers.ModelSerializer):
             "contact_email",
             "contact_phone",
             "description",
+            "logo_url",
             "is_active",
             "created_at",
             "updated_at",
@@ -28,6 +30,7 @@ class VendorUpdateSerializer(serializers.ModelSerializer):
             "contact_email",
             "contact_phone",
             "description",
+            "logo_url",
         ]
 
     def validate_contact_email(self, value):
@@ -35,7 +38,7 @@ class VendorUpdateSerializer(serializers.ModelSerializer):
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)
         if qs.exists():
-            raise serializers.ValidationError("A vendor with this email already exists.")
+            raise serializers.ValidationError(Messages.Vendor.EMAIL_EXISTS.format(email=value))
         return value
 
 

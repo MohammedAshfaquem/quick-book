@@ -17,6 +17,7 @@ class Event(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, default="")
     venue = models.CharField(max_length=255)
+    banner_url = models.URLField(blank=True, default="",)
 
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
