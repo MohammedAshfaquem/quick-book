@@ -13,19 +13,19 @@
 <body>
 
   <div class="dashboard-layout">
-    {% include 'dashboard/includes/_sidebar.html' %}
+    {% include 'dashboard/components/sidebar.html' %}
 
     <div class="main-wrapper">
-      {% include 'dashboard/includes/_header.html' %}
+      {% include 'dashboard/components/header.html' %}
 
       <main class="main-content">
-        {% include 'dashboard/includes/_messages.html' %}
+        {% include 'dashboard/components/messages.html' %}
         {% block content %}{% endblock %}
       </main>
     </div>
   </div>
 
-  {% include 'dashboard/includes/_logout_modal.html' %}
+  {% include 'dashboard/components/logout_modal.html' %}
 
   <script>
     function toggleMobileSidebar() {
